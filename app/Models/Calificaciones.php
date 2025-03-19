@@ -6,5 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Calificaciones extends Model
 {
-    //
+    protected $table = 'calificaciones';
+
+    protected $fillable = [
+        'id_evaluador', 'id_evaluado', 'id_servicio',
+        'estrellas', 'comentarios'
+    ];
+
+    public function evaluador (){
+        return $this->belongsTo(Usuarios::class, 'id_evaluador');
+    }
+    public function evaluado (){
+        return $this->belongsTo(Usuarios::class, 'id_evaluado');
+    }
+    public function servicio (){
+        return $this->belongsTo(Servicios::class, 'id_servicio');
+    }
 }
