@@ -4,59 +4,99 @@ namespace App\Http\Controllers;
 
 use App\Models\Calificaciones;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 class CalificacionesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Mostrar todas las calificaciones.
      */
     public function index()
     {
-        return response ()->json(Calificaciones::all(), 200);//retorna todas las calificaciones
+        try {
+            $calificaciones = Calificaciones::all();
+            return response()->json($calificaciones, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener las calificaciones'], 500);
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Crear una nueva calificación.
      */
-    public function store(Request $request)//crea una calificacion
+    public function store(Request $request)
     {
-        $request->validate([
-            'id_servicio'=>'required|exists:servicios,id',
-            'id_usuario'=>'required|exists:usuarios,id',
-            'calificacion'=>'required|numeric|min:0|max:5',
-            'comentario'=>'nullable|string',
-        ]);
+        try {
+            $request->validate([
+                'id_servicio' => 'required|exists:servicios,id',
+                'id_usuario' => 'required|exists:usuarios,id',
+                'calificacion' => 'required|numeric|min:0|max:5',
+                'comentario' => 'nullable|string',
+            ]);
 
-        $calificaciones=Calificaciones::create($request->all());
-        return response()->json($calificaciones, 201);
+            $calificacion = Calificaciones::create($request->all());
+            return response()->json($calificacion, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Datos inválidos', 'detalles' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al crear la calificación'], 500);
+        }
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar una calificación por ID.
      */
-    public function show($id)//muestra una calificacion en especifico por su id
+    public function show($id)
     {
-        $calificaciones=Calificaciones::findOrfail($id);
-        return response()->json($calificaciones, 200);
+        try {
+            $calificacion = Calificaciones::findOrFail($id);
+            return response()->json($calificacion, 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Calificación no encontrada'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener la calificación'], 500);
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar una calificación.
      */
-    public function update(Request $request, Calificaciones $calificaciones)//actualiza una calificacion 
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'calificacion'=>'numeric|min:0|max:5',
-            'comentario'=>'nullable|string'
-        ]);
+        try {
+            $request->validate([
+                'calificacion' => 'numeric|min:0|max:5',
+                'comentario' => 'nullable|string',
+            ]);
+
+            $calificacion = Calificaciones::findOrFail($id);
+            $calificacion->update($request->all());
+
+            return response()->json($calificacion, 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Calificación no encontrada'], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Datos inválidos', 'detalles' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al actualizar la calificación'], 500);
+        }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar una calificación.
      */
-    public function destroy( $id)//elimina una calificacion
+    public function destroy($id)
     {
-        Calificaciones::destroy($id);
-        return response()->json(null, 204);
+        try {
+            $calificacion = Calificaciones::findOrFail($id);
+            $calificacion->delete();
+
+            return response()->json(['mensaje' => 'Calificación eliminada correctamente'], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Calificación no encontrada'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al eliminar la calificación'], 500);
+        }
     }
 }
