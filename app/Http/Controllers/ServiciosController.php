@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicios;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 class ServiciosController extends Controller
 {
@@ -12,25 +14,33 @@ class ServiciosController extends Controller
      */
     public function index()
     {
-        $servicios = Servicios::with(['usuario', 'socio'])->get();
-        return response()->json($servicios);
+        try {
+            $servicios = Servicios::with(['usuario', 'socio'])->get();
+            return response()->json($servicios);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener los servicios', 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**fd
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'usuario_id' => 'required|exists:usuarios,id',
-            'socio_id' => 'required|exists:usuarios,id',
-            'descripcion' => 'required|string',
-            'estado' => 'required|in:Pendiente,En curso,Finalizado,Cancelado',
-        ]);
+        try {
+            $request->validate([
+                'usuario_id' => 'required|exists:usuarios,id',
+                'socio_id' => 'required|exists:usuarios,id',
+                'descripcion' => 'required|string',
+                'estado' => 'required|in:Pendiente,En curso,Finalizado,Cancelado',
+            ]);
 
-        $servicio = Servicios::create($request->all());
+            $servicio = Servicios::create($request->all());
 
-        return response()->json(['message' => 'Servicio creado exitosamente', 'servicio' => $servicio], 201);
+            return response()->json(['message' => 'Servicio creado exitosamente', 'servicio' => $servicio], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al crear el servicio', 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -38,8 +48,14 @@ class ServiciosController extends Controller
      */
     public function show($id)
     {
-        $servicio = Servicios::with(['usuario', 'socio'])->findOrFail($id);
-        return response()->json($servicio);
+        try {
+            $servicio = Servicios::with(['usuario', 'socio'])->findOrFail($id);
+            return response()->json($servicio);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Servicio no encontrado'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener el servicio', 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -47,15 +63,21 @@ class ServiciosController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'descripcion' => 'string',
-            'estado' => 'in:Pendiente,En curso,Finalizado,Cancelado'
-        ]);
+        try {
+            $request->validate([
+                'descripcion' => 'string',
+                'estado' => 'in:Pendiente,En curso,Finalizado,Cancelado'
+            ]);
 
-        $servicio = Servicios::findOrFail($id);
-        $servicio->update($request->all());
+            $servicio = Servicios::findOrFail($id);
+            $servicio->update($request->all());
 
-        return response()->json(['message' => 'Servicio actualizado exitosamente', 'servicio' => $servicio]);
+            return response()->json(['message' => 'Servicio actualizado exitosamente', 'servicio' => $servicio]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Servicio no encontrado'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el servicio', 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -63,9 +85,15 @@ class ServiciosController extends Controller
      */
     public function destroy($id)
     {
-        $servicio = Servicios::findOrFail($id);
-        $servicio->delete();
+        try {
+            $servicio = Servicios::findOrFail($id);
+            $servicio->delete();
 
-        return response()->json(['message' => 'Servicio eliminado exitosamente']);
+            return response()->json(['message' => 'Servicio eliminado exitosamente']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Servicio no encontrado'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al eliminar el servicio', 'message' => $e->getMessage()], 500);
+        }
     }
 }
