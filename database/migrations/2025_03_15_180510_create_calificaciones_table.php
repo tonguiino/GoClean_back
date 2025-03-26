@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('id_evaluador')->constrained('usuarios');
             $table->foreignId('id_evaluado')->constrained('usuarios');
             $table->foreignId('id_servicio')->constrained('servicios');
-            $table->integer('estrellas');
+            $table->integer('estrellas')->default(0);
             $table->text('comentarios')->nullable();
             $table->timestamps();
         });

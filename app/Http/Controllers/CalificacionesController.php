@@ -30,9 +30,10 @@ class CalificacionesController extends Controller
         try {
             $request->validate([
                 'id_servicio' => 'required|exists:servicios,id',
-                'id_usuario' => 'required|exists:usuarios,id',
-                'calificacion' => 'required|numeric|min:0|max:5',
-                'comentario' => 'nullable|string',
+                'id_evaluado' => 'required|exists:usuarios,id',
+                'id_evaluador' => 'required|exists:usuarios,id',
+                'estrellas' => 'required|numeric|min:0|max:5',
+                'comentario' => 'nullable|string'
             ]);
 
             $calificacion = Calificaciones::create($request->all());
@@ -66,7 +67,7 @@ class CalificacionesController extends Controller
     {
         try {
             $request->validate([
-                'calificacion' => 'numeric|min:0|max:5',
+                'estrellas' => 'numeric|min:0|max:5',
                 'comentario' => 'nullable|string',
             ]);
 

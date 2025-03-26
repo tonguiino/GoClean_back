@@ -10,7 +10,7 @@ class Facturas extends Model
 
     protected $fillable = [
         'id_servicio', 'id_usuario', 'id_socio',
-        'monto', 'metodo_pago', 'detalles', 'fecha_pago'
+        'monto', 'metodo_pago', 'detalles'
     ];
 
     public function servicio()//relacion de uno a muchos
