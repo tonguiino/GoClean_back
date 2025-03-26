@@ -29,8 +29,8 @@ class ServiciosController extends Controller
     {
         try {
             $request->validate([
-                'usuario_id' => 'required|exists:usuarios,id',
-                'socio_id' => 'required|exists:usuarios,id',
+                'id_usuario' => 'required|exists:usuarios,id',
+                'id_socio' => 'required|exists:usuarios,id',
                 'descripcion' => 'required|string',
                 'estado' => 'required|in:Pendiente,En curso,Finalizado,Cancelado',
             ]);

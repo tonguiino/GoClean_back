@@ -12,19 +12,23 @@ class Servicios extends Model
     protected $table = 'servicios';
 
     protected $fillable = [
-        'usuario_id',
-        'socio_id',
+        'id_usuario', // Coincide con la base de datos
+        'id_socio',   // Coincide con la base de datos
         'descripcion',
-        'estado'
+        'tipo_plan',
+        'estado',
+        'direccion_servicio',
+        'fecha_solicitud',
+        'fecha_finalizacion'
     ];
 
     public function usuario()
     {
-        return $this->belongsTo(Usuarios::class, 'usuario_id');
+        return $this->belongsTo(Usuarios::class, 'id_usuario');
     }
 
     public function socio()
     {
-        return $this->belongsTo(Usuarios::class, 'socio_id');
+        return $this->belongsTo(Usuarios::class, 'id_socio');
     }
 }
