@@ -24,7 +24,9 @@ class UsuariosController extends Controller
                 'debug' => $th->getMessage(),
                 'line' => $th->getLine(),
                 'code' => $th->getCode()
-            ], 500);
+
+            ], 404);
+
         }
     }
 
@@ -66,10 +68,12 @@ class UsuariosController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error al agregar usuario',
+
+                'message' => 'Error al registrar usuario',
                 'debug' => $th->getMessage(),
                 'line' => $th->getLine(),
-                'code' => $th->getCode(),
+                'code' => $th->getCode()
+
             ], 500);
         }
     }
@@ -88,12 +92,15 @@ class UsuariosController extends Controller
                 'debug' => $th->getMessage(),
                 'line' => $th->getLine(),
                 'code' => $th->getCode()
+
             ], 500);
+
         }
     }
 
     public function update(Request $request, Usuarios $usuario)
     {
+
         $request->validate([
             'nombre' => 'required|string|max:100',
             'correo' => 'required|string|email|max:100|unique:usuarios,correo,' . $usuario->id,
@@ -144,7 +151,7 @@ class UsuariosController extends Controller
             $usuario->delete();
             return response()->json([
                 'status' => 'ok',
-                'message' => 'Usuario borrado correctamente'
+                'message' => 'Usuario eliminado correctamente'
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -155,5 +162,31 @@ class UsuariosController extends Controller
                 'code' => $th->getCode(),
             ], 500);
         }
+    }
+
+    /**
+     * Método para iniciar sesión
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'correo' => 'required|email',
+            'contrasena' => 'required|string'
+        ]);
+
+        $usuario = Usuarios::where('correo', $request->correo)->first();
+
+        if (!$usuario || !Hash::check($request->contrasena, $usuario->contrasena)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Credenciales incorrectas'
+            ], 401);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Inicio de sesión exitoso',
+            'data' => $usuario
+        ], 200);
     }
 }

@@ -102,4 +102,22 @@ class FacturasController extends Controller
             return response()->json(['error' => 'Error al eliminar la factura'], 500);
         }
     }
+
+    /**
+     * Obtener todas las facturas de un socio específico.
+     */
+    public function porSocio($id)
+    {
+        try {
+            $facturas = Facturas::where('id_socio', $id)->get();
+
+            if ($facturas->isEmpty()) {
+                return response()->json(['mensaje' => 'No se encontraron facturas para este socio.'], 404);
+            }
+
+            return response()->json($facturas, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener las facturas del socio', 'message' => $e->getMessage()], 500);
+        }
+    }
 }
