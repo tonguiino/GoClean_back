@@ -9,9 +9,6 @@ use Exception;
 
 class ServiciosController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -22,30 +19,36 @@ class ServiciosController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
-    {
-        try {
-            $request->validate([
-                'id_usuario' => 'required|exists:usuarios,id',
-                'id_socio' => 'required|exists:usuarios,id',
-                'descripcion' => 'required|string',
-                'estado' => 'required|in:Pendiente,En curso,Finalizado,Cancelado',
-            ]);
+{
+    try {
+        // Validación de los datos
+        $request->validate([
+            'usuario_id' => 'required|exists:usuarios,id',
+            'tipo_servicio' => 'required|string',
+            'direccion' => 'required|string',
+            'fecha' => 'required|date',
+            'hora' => 'required|date_format:H:i',
+            'descripcion' => 'nullable|string',
+        ]);
 
-            $servicio = Servicios::create($request->all());
+        // Crear el servicio
+        $servicio = new Servicios();
+        $servicio->usuario_id = $request->usuario_id;
+        $servicio->tipo_servicio = $request->tipo_servicio;
+        $servicio->direccion = $request->direccion;
+        $servicio->fecha = $request->fecha;
+        $servicio->hora = $request->hora;
+        $servicio->descripcion = $request->descripcion;
+        $servicio->estado = 'Pendiente'; // Estado inicial
+        $servicio->save();
 
-            return response()->json(['message' => 'Servicio creado exitosamente', 'servicio' => $servicio], 201);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Error al crear el servicio', 'message' => $e->getMessage()], 500);
-        }
+        return response()->json(['message' => 'Servicio agendado con éxito.', 'servicio' => $servicio], 201);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Error al agendar el servicio', 'message' => $e->getMessage()], 500);
     }
+}
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         try {
@@ -58,9 +61,6 @@ class ServiciosController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         try {
@@ -80,9 +80,6 @@ class ServiciosController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {
@@ -96,4 +93,51 @@ class ServiciosController extends Controller
             return response()->json(['error' => 'Error al eliminar el servicio', 'message' => $e->getMessage()], 500);
         }
     }
+
+    // 🔥 NUEVO: obtener servicios por socio (para Dashboard)
+    public function serviciosPorSocio($idSocio)
+    {
+        try {
+            $servicios = Servicios::with(['usuario', 'socio'])
+                ->where('id_socio', $idSocio)
+                ->get();
+
+            return response()->json(['data' => $servicios], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener servicios del socio', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function aceptarServicio($id)
+{
+    try {
+        $servicio = Servicios::findOrFail($id);
+        // Cambiar el estado a "En curso" cuando se acepte
+        $servicio->estado = 'En curso';
+        $servicio->save();
+
+        return response()->json(['message' => 'Servicio aceptado exitosamente', 'servicio' => $servicio]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json(['error' => 'Servicio no encontrado'], 404);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Error al aceptar el servicio', 'message' => $e->getMessage()], 500);
+    }
+}
+
+public function rechazarServicio($id)
+{
+    try {
+        $servicio = Servicios::findOrFail($id);
+        // Cambiar el estado a "Cancelado" cuando se rechace
+        $servicio->estado = 'Cancelado';
+        $servicio->save();
+
+        return response()->json(['message' => 'Servicio rechazado exitosamente', 'servicio' => $servicio]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json(['error' => 'Servicio no encontrado'], 404);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Error al rechazar el servicio', 'message' => $e->getMessage()], 500);
+    }
+}
+
 }

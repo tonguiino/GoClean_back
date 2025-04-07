@@ -100,4 +100,22 @@ class CalificacionesController extends Controller
             return response()->json(['error' => 'Error al eliminar la calificación'], 500);
         }
     }
+
+    /**
+     * Obtener todas las calificaciones de un socio específico (evaluado).
+     */
+    public function porSocio($id)
+    {
+        try {
+            $calificaciones = Calificaciones::where('id_evaluado', $id)->get();
+
+            if ($calificaciones->isEmpty()) {
+                return response()->json(['mensaje' => 'No se encontraron calificaciones para este socio.'], 404);
+            }
+
+            return response()->json($calificaciones, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error al obtener las calificaciones del socio', 'message' => $e->getMessage()], 500);
+        }
+    }
 }
